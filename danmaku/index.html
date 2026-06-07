@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Match</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ======================================================
+       MENÚ DE CONFIGURACIÓN
+  ======================================================= -->
+  <div id="menu">
+    <h1>Memory Match</h1>
+
+    <label>Modo de juego
+      <select id="select-mode">
+        <option value="solo">Solitario cronometrado</option>
+        <option value="pvp">PvP (2 jugadores)</option>
+        <option value="free">Libre (práctica)</option>
+      </select>
+    </label>
+
+    <label>Dificultad
+      <select id="select-difficulty">
+        <option value="4">Fácil (4×4)</option>
+        <option value="6">Intermedio (6×6)</option>
+        <option value="8">Difícil (8×8)</option>
+      </select>
+    </label>
+
+    <label>Jugador 1
+      <input id="input-player1" type="text" placeholder="Tu nombre" />
+    </label>
+
+    <label id="player2-label" style="display:none">Jugador 2
+      <input id="input-player2" type="text" placeholder="Nombre jugador 2" />
+    </label>
+
+    <button id="btn-start">Iniciar Juego</button>
+  </div>
+
+  <!-- ======================================================
+       CONTENEDOR DEL JUEGO
+  ======================================================= -->
+  <div id="game-container">
+    <div id="hud"></div>
+    <div id="board"></div>
+  </div>
+
+  <!-- ======================================================
+       PANTALLA DE FIN DE PARTIDA
+  ======================================================= -->
+  <div id="end-screen"></div>
+
+  <!-- ======================================================
+       SCRIPTS — orden de dependencia
+  ======================================================= -->
+  <script src="js/board.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/modes.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
