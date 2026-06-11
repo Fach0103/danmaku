@@ -12,11 +12,11 @@ const DEFAULT_ICONS = [
 
 class Card {
   constructor(id, icon) {
-    this.id = id;
-    this.icon = icon;
+    this.id        = id;
+    this.icon      = icon;
     this.isFlipped = false;
     this.isMatched = false;
-    this.element = this._createElement();
+    this.element   = this._createElement();
   }
 
   _createElement() {
@@ -68,18 +68,18 @@ class Card {
 
 class Board {
   constructor(containerId) {
-    this.container = document.getElementById(containerId);
-    this.cards = [];
-    this.size = 4;
+    this.container  = document.getElementById(containerId);
+    this.cards      = [];
+    this.size       = 4;
     this.totalPairs = 0;
   }
 
   generate(size, icons) {
-    this.size = size || 4;
-    icons = icons || DEFAULT_ICONS;
+    this.size   = size || 4;
+    icons       = icons || DEFAULT_ICONS;
 
-    const totalCards = this.size * this.size;
-    this.totalPairs = totalCards / 2;
+    const totalCards    = this.size * this.size;
+    this.totalPairs     = totalCards / 2;
 
     const deck = this._shuffle(
       icons.slice(0, this.totalPairs).concat(icons.slice(0, this.totalPairs))
@@ -101,7 +101,7 @@ class Board {
 
   reset() {
     this.container.innerHTML = '';
-    this.cards = [];
+    this.cards      = [];
     this.totalPairs = 0;
   }
 

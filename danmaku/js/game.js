@@ -7,26 +7,26 @@ class GameState {
   constructor() {
     this.flippedCards = [];
     this.matchedPairs = 0;
-    this.moves = 0;
-    this.isLocked = false;
-    this.isStarted = false;
-    this.isFinished = false;
+    this.moves        = 0;
+    this.isLocked     = false;
+    this.isStarted    = false;
+    this.isFinished   = false;
   }
 
   reset() {
     this.flippedCards = [];
     this.matchedPairs = 0;
-    this.moves = 0;
-    this.isLocked = false;
-    this.isStarted = false;
-    this.isFinished = false;
+    this.moves        = 0;
+    this.isLocked     = false;
+    this.isStarted    = false;
+    this.isFinished   = false;
   }
 }
 
 class Game {
   constructor(board, callbacks) {
-    this.board = board;
-    this.state = new GameState();
+    this.board     = board;
+    this.state     = new GameState();
     this.callbacks = callbacks || {};
 
     this.board.container.addEventListener('card-click', (e) => {
@@ -44,7 +44,6 @@ class Game {
     if (state.isLocked || state.isFinished) return;
 
     const card = this.board.getCardById(cardId);
-
     if (card.isMatched || card.isFlipped) return;
 
     if (!state.isStarted) {
@@ -65,9 +64,7 @@ class Game {
 
   _evaluatePair() {
     const [cardA, cardB] = this.state.flippedCards;
-    const isMatch = cardA.icon === cardB.icon;
-
-    if (isMatch) {
+    if (cardA.icon === cardB.icon) {
       this._handleMatch(cardA, cardB);
     } else {
       this._handleMismatch(cardA, cardB);
@@ -80,7 +77,7 @@ class Game {
 
     this.state.matchedPairs++;
     this.state.flippedCards = [];
-    this.state.isLocked = false;
+    this.state.isLocked     = false;
 
     this._trigger('onMatch', [cardA, cardB], this.state.matchedPairs, this.board.totalPairs);
 
@@ -100,7 +97,7 @@ class Game {
       cardA.flip(false);
       cardB.flip(false);
       this.state.flippedCards = [];
-      this.state.isLocked = false;
+      this.state.isLocked     = false;
     }, 900);
   }
 

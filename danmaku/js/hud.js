@@ -1,13 +1,13 @@
 // hud.js
 // Responsabilidad: renderizar y actualizar la interfaz de seguimiento.
-// Depende de: nada (solo manipula el DOM)
-// Es usado por: SoloMode, PvPMode, FreeMode (modes.js)
+// Depende de: nada
+// Es usado por: modes.js
 
 class HUD {
   constructor(hudId, endScreenId) {
-    this.container = document.getElementById(hudId);
+    this.container          = document.getElementById(hudId);
     this.endScreenContainer = document.getElementById(endScreenId);
-    this._els = {};
+    this._els               = {};
     this._buildHUD();
   }
 
@@ -61,17 +61,9 @@ class HUD {
     this._els.pairs.textContent      = 'Pares: 0';
   }
 
-  updateMoves(moves) {
-    this._els.moves.textContent = `Movimientos: ${moves}`;
-  }
-
-  updatePairs(matched, total) {
-    this._els.pairs.textContent = `Pares: ${matched} / ${total}`;
-  }
-
-  updateTimer(formatted) {
-    this._els.timer.textContent = formatted;
-  }
+  updateMoves(moves)            { this._els.moves.textContent = `Movimientos: ${moves}`; }
+  updatePairs(matched, total)   { this._els.pairs.textContent = `Pares: ${matched} / ${total}`; }
+  updateTimer(formatted)        { this._els.timer.textContent = formatted; }
 
   updatePvP(players, scores, currentTurn) {
     this._els.playerInfo.innerHTML = players.map((name, i) => {
@@ -85,38 +77,30 @@ class HUD {
 
   showEndScreen(summary) {
     this._hideHUD();
-
     if (typeof EndScreen !== 'undefined') {
       const endScreen = new EndScreen(this.endScreenContainer);
       endScreen.show(summary);
       return;
     }
-
-    // Fallback mínimo mientras no exista endScreen.js
+    // Fallback mínimo
     this.endScreenContainer.style.display = 'flex';
     this.endScreenContainer.innerHTML = `
-      <div class="end-screen-fallback">
+      <div class="end-card">
         <h2>¡Partida terminada!</h2>
         <p>Movimientos: ${summary.moves}</p>
         <p>Pares: ${summary.matchedPairs} / ${summary.totalPairs}</p>
         ${summary.time !== undefined ? `<p>Tiempo: ${this._formatTime(summary.time)}</p>` : ''}
-        ${summary.isDraw  ? '<p>¡Empate!</p>' : ''}
+        ${summary.isDraw  ? '<p>¡Empate!</p>'                      : ''}
         ${summary.winner  ? `<p>🏆 Ganador: ${summary.winner}</p>` : ''}
         <button id="end-restart">Jugar de nuevo</button>
         <button id="end-menu">Volver al menú</button>
       </div>
     `;
-
     document.getElementById('end-restart').addEventListener('click', () => {
-      this.endScreenContainer.dispatchEvent(
-        new CustomEvent('end-restart', { bubbles: true })
-      );
+      this.endScreenContainer.dispatchEvent(new CustomEvent('end-restart', { bubbles: true }));
     });
-
     document.getElementById('end-menu').addEventListener('click', () => {
-      this.endScreenContainer.dispatchEvent(
-        new CustomEvent('end-menu', { bubbles: true })
-      );
+      this.endScreenContainer.dispatchEvent(new CustomEvent('end-menu', { bubbles: true }));
     });
   }
 

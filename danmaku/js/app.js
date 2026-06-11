@@ -1,101 +1,124 @@
 // app.js
 // Responsabilidad: punto de entrada y coordinación general.
-// Depende de: board.js, game.js, modes.js, timer.js, hud.js
+// Depende de: todos los demás archivos
 
 class App {
   constructor() {
-    this.board  = null;
-    this.game   = null;
-    this.mode   = null;
-    this.timer  = null;
-    this.hud    = null;
-    this.config = {
+    this.board              = null;
+    this.game               = null;
+    this.mode               = null;
+    this.timer              = null;
+    this.hud                = null;
+    this.menu               = null;
+    this.themeManager       = null;
+    this.achievementManager = null;
+    this.notifier           = null;
+    this.config             = {
       size:     4,
       modeName: 'solo',
+      themeId:  'animals',
       players:  ['Jugador 1']
     };
     this._init();
   }
 
   _init() {
+    // Instanciar núcleo
+    this.themeManager = new ThemeManager();
+    this.themeManager.apply('animals');
+
     this.board = new Board('board');
     this.hud   = new HUD('hud', 'end-screen');
+    this.game  = new Game(this.board, {});
+
     this.timer = new Timer((elapsed) => {
       this.hud.updateTimer(this._formatTime(elapsed));
+      this.achievementManager.onTick(elapsed);
     });
-    this.game  = new Game(this.board, {});
+
+    // Notificador de logros
+    this.notifier = new AchievementNotifier('achievement-container');
+
+    // Manager de logros con callback al notificador
+    this.achievementManager = new AchievementManager((achievement) => {
+      this.notifier.notify(achievement);
+    });
+
+    // Menú — recibe config y arranca la partida
+    this.menu = new Menu('menu', this.themeManager, (config) => {
+      this.config = config;
+      this.startGame();
+    });
+
+    // Escuchar eventos globales
     this._bindGlobalEvents();
   }
 
   _bindGlobalEvents() {
-    document.getElementById('btn-start').addEventListener('click', () => {
-      this._readConfig();
-      this.startGame();
-    });
-
+    // Reiniciar desde el HUD
     document.addEventListener('hud-restart', () => {
       this.startGame();
     });
 
+    // Jugar de nuevo desde pantalla de fin
     document.addEventListener('end-restart', () => {
       document.getElementById('end-screen').style.display = 'none';
       this.startGame();
     });
 
+    // Volver al menú desde pantalla de fin
     document.addEventListener('end-menu', () => {
       document.getElementById('end-screen').style.display = 'none';
       this._showMenu();
     });
-
-    document.getElementById('select-mode').addEventListener('change', (e) => {
-      const isPvP = e.target.value === 'pvp';
-      document.getElementById('player2-label').style.display = isPvP ? 'flex' : 'none';
-    });
-  }
-
-  _readConfig() {
-    const size     = parseInt(document.getElementById('select-difficulty').value);
-    const modeName = document.getElementById('select-mode').value;
-    const p1       = document.getElementById('input-player1').value.trim() || 'Jugador 1';
-    const p2       = document.getElementById('input-player2').value.trim() || 'Jugador 2';
-
-    this.config = {
-      size,
-      modeName,
-      players: modeName === 'pvp' ? [p1, p2] : [p1]
-    };
   }
 
   startGame() {
-    const { size, modeName, players } = this.config;
-    this._hideMenu();
+    const { size, modeName, themeId, players } = this.config;
+
+    this.menu.hide();
+    this._showGame();
+
+    // Aplicar temática e iconos
+    this.themeManager.apply(themeId);
+
+    // Resetear timer
     this.timer.reset();
-    this.board.generate(size);
+
+    // Preparar logros
+    this.achievementManager.setup(modeName, size, (size * size) / 2);
+
+    // Generar tablero con iconos de la temática activa
+    this.board.generate(size, this.themeManager.getActiveIcons());
+
+    // Instanciar modo y arrancar
     this.mode = this._createMode(modeName, players);
     this.mode.start();
   }
 
   _createMode(modeName, players) {
     switch (modeName) {
-      case 'solo': return new SoloMode(this.game, players, this.timer, this.hud);
-      case 'pvp':  return new PvPMode(this.game, players, this.hud);
-      case 'free': return new FreeMode(this.game, players, this.hud);
+      case 'solo':
+        return new SoloMode(this.game, players, this.timer, this.hud, this.achievementManager);
+      case 'pvp':
+        return new PvPMode(this.game, players, this.hud, this.achievementManager);
+      case 'free':
+        return new FreeMode(this.game, players, this.hud, this.achievementManager);
       default:
         console.warn(`Modo desconocido: ${modeName}. Usando SoloMode.`);
-        return new SoloMode(this.game, players, this.timer, this.hud);
+        return new SoloMode(this.game, players, this.timer, this.hud, this.achievementManager);
     }
   }
 
   _showMenu() {
-    document.getElementById('menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
     this.board.reset();
     this.timer.reset();
+    this.menu.show();
   }
 
-  _hideMenu() {
-    document.getElementById('menu').style.display = 'none';
-    document.getElementById('game-container').style.display = 'block';
+  _showGame() {
+    document.getElementById('game-container').style.display = 'flex';
   }
 
   _formatTime(seconds) {
