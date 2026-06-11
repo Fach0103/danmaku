@@ -176,6 +176,27 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
+  transition: opacity 0.2s;
+}
+
+.hud-restart:hover { opacity: 0.8; }
+
+/* ---- BOTÓN SALIR ---- */
+.hud-exit {
+  padding: 6px 14px;
+  background: #0f3460;
+  color: #94a3b8;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.hud-exit:hover {
+  background: #f87171;
+  color: white;
+  border-color: #f87171;
 }
 
 /* ---- TABLERO ---- */
@@ -228,14 +249,14 @@ body {
 }
 
 .card-back {
-  background: #16213e;
+  background: white;
   border: 2px solid #0f3460;
   transform: rotateY(180deg);
 }
 
 .card.matched .card-back {
   border-color: #4ade80;
-  background: #14532d;
+  background: #f0fff4;
 }
 
 .card.wrong .card-back {
@@ -247,6 +268,14 @@ body {
   0%,  100% { transform: rotateY(180deg) translateX(0);    }
   25%        { transform: rotateY(180deg) translateX(-5px); }
   75%        { transform: rotateY(180deg) translateX(5px);  }
+}
+
+/* ---- IMAGEN DE CARTA ---- */
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 /* ---- PANTALLA DE FIN ---- */
@@ -305,7 +334,13 @@ body {
 .end-stat-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
 
 .end-pvp { display: flex; flex-direction: column; gap: 8px; }
-.end-pvp-title { font-size: 14px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.end-pvp-title {
+  font-size: 14px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
 
 .end-pvp-row {
   display: flex;
@@ -323,7 +358,12 @@ body {
 }
 
 .end-achievements { display: flex; flex-direction: column; gap: 10px; }
-.end-achievements-title { font-size: 14px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+.end-achievements-title {
+  font-size: 14px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
 .end-achievements-list {
   display: flex;
@@ -358,7 +398,7 @@ body {
   transition: opacity 0.2s;
 }
 
-.end-btn:hover { opacity: 0.85; }
+.end-btn:hover      { opacity: 0.85; }
 .end-btn--primary   { background: #e94560; color: white; }
 .end-btn--secondary { background: #0f3460; color: white; }
 
@@ -409,3 +449,67 @@ body {
 
 .achievement-info strong { font-size: 14px; color: #e2e8f0; }
 .achievement-info small  { font-size: 12px; color: #94a3b8; }
+
+/* ---- CONFIRMACIÓN SALIR ---- */
+.exit-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exit-confirm-box {
+  background: #16213e;
+  border: 2px solid #e94560;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 280px;
+}
+
+.exit-confirm-msg {
+  font-size: 16px;
+  color: #e2e8f0;
+  line-height: 1.6;
+}
+
+.exit-confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.exit-btn-cancel {
+  flex: 1;
+  padding: 10px;
+  background: #0f3460;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.exit-btn-cancel:hover  { opacity: 0.8; }
+
+.exit-btn-confirm {
+  flex: 1;
+  padding: 10px;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.exit-btn-confirm:hover { opacity: 0.8; }

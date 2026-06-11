@@ -3,12 +3,7 @@
 // Depende de: nada
 // Es usado por: game.js, app.js
 
-const DEFAULT_ICONS = [
-  '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼',
-  '🐨','🐯','🦁','🐮','🐸','🐵','🐔','🐧',
-  '🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗',
-  '🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜'
-];
+const CARD_SIZE = 80;
 
 class Card {
   constructor(id, icon) {
@@ -33,7 +28,12 @@ class Card {
 
     const back = document.createElement('div');
     back.classList.add('card-back');
-    back.textContent = this.icon;
+
+    const img = document.createElement('img');
+    img.src = this.icon;
+    img.alt = '';
+    img.classList.add('card-img');
+    back.appendChild(img);
 
     inner.appendChild(front);
     inner.appendChild(back);
@@ -75,18 +75,17 @@ class Board {
   }
 
   generate(size, icons) {
-    this.size   = size || 4;
-    icons       = icons || DEFAULT_ICONS;
+    this.size       = size || 4;
+    icons           = icons || [];
 
-    const totalCards    = this.size * this.size;
-    this.totalPairs     = totalCards / 2;
+    const totalCards = this.size * this.size;
+    this.totalPairs  = totalCards / 2;
 
-    const deck = this._shuffle(
-      icons.slice(0, this.totalPairs).concat(icons.slice(0, this.totalPairs))
-    );
+    const selected = this._pickRandom(icons, this.totalPairs);
+    const deck     = this._shuffle(selected.concat(selected));
 
     this.reset();
-    this.container.style.gridTemplateColumns = `repeat(${this.size}, 80px)`;
+    this.container.style.gridTemplateColumns = `repeat(${this.size}, ${CARD_SIZE}px)`;
 
     deck.forEach((icon, index) => {
       const card = new Card(index, icon);
@@ -103,6 +102,11 @@ class Board {
     this.container.innerHTML = '';
     this.cards      = [];
     this.totalPairs = 0;
+  }
+
+  _pickRandom(arr, n) {
+    const shuffled = this._shuffle(arr.slice());
+    return shuffled.slice(0, n);
   }
 
   _shuffle(arr) {

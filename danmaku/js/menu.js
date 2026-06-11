@@ -41,6 +41,7 @@ class Menu {
     ];
     const selector = document.createElement('div');
     selector.classList.add('mode-selector');
+
     options.forEach(opt => {
       const btn = document.createElement('button');
       btn.classList.add('mode-btn');
@@ -61,6 +62,7 @@ class Menu {
       }
       selector.appendChild(btn);
     });
+
     group.appendChild(selector);
     return group;
   }
@@ -74,6 +76,7 @@ class Menu {
     ];
     const selector = document.createElement('div');
     selector.classList.add('difficulty-selector');
+
     options.forEach(opt => {
       const btn = document.createElement('button');
       btn.classList.add('difficulty-btn');
@@ -93,6 +96,7 @@ class Menu {
       }
       selector.appendChild(btn);
     });
+
     group.appendChild(selector);
     return group;
   }
@@ -101,27 +105,33 @@ class Menu {
     const group = this._createGroup('Temática');
     const selector = document.createElement('div');
     selector.classList.add('theme-selector');
+
     this.themeManager.getAllThemes().forEach((theme, index) => {
       const btn = document.createElement('button');
       btn.classList.add('theme-btn');
       btn.dataset.value = theme.id;
-      const preview = theme.icons.slice(0, 4).join(' ');
+
+      // Preview con emoji genérico ya que ahora usamos spritesheets
       btn.innerHTML = `
-        <span class="theme-btn-preview">${preview}</span>
+        <span class="theme-btn-preview">🎴</span>
         <span class="theme-btn-name">${theme.name}</span>
       `;
+
       btn.addEventListener('click', () => {
         selector.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('theme-btn--active'));
         btn.classList.add('theme-btn--active');
         this._els.selectedTheme = theme.id;
         this.themeManager.apply(theme.id);
       });
+
       if (index === 0) {
         btn.classList.add('theme-btn--active');
         this._els.selectedTheme = theme.id;
       }
+
       selector.appendChild(btn);
     });
+
     group.appendChild(selector);
     return group;
   }
@@ -174,7 +184,7 @@ class Menu {
     return {
       size:     this._els.selectedDifficulty || 4,
       modeName,
-      themeId:  this._els.selectedTheme || 'animals',
+      themeId:  this._els.selectedTheme || 'touhou',
       players:  modeName === 'pvp' ? [p1, p2] : [p1]
     };
   }
@@ -199,8 +209,8 @@ class Menu {
       errorEl.classList.add('menu-error');
       this._els.startBtn.before(errorEl);
     }
-    errorEl.textContent    = message;
-    errorEl.style.display  = 'block';
+    errorEl.textContent   = message;
+    errorEl.style.display = 'block';
   }
 
   _clearErrors() {
@@ -209,7 +219,9 @@ class Menu {
   }
 
   _togglePlayer2(show) {
-    this._els.group2.style.display = show ? 'flex' : 'none';
+    if (this._els.group2) {
+      this._els.group2.style.display = show ? 'flex' : 'none';
+    }
   }
 
   show() { this.container.style.display = 'flex'; }

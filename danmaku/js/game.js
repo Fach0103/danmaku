@@ -64,11 +64,17 @@ class Game {
 
   _evaluatePair() {
     const [cardA, cardB] = this.state.flippedCards;
-    if (cardA.icon === cardB.icon) {
+    const isMatch = this._iconsMatch(cardA.icon, cardB.icon);
+
+    if (isMatch) {
       this._handleMatch(cardA, cardB);
     } else {
       this._handleMismatch(cardA, cardB);
     }
+  }
+
+  _iconsMatch(iconA, iconB) {
+    return iconA === iconB;
   }
 
   _handleMatch(cardA, cardB) {

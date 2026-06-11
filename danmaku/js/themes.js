@@ -19,74 +19,27 @@ class ThemeManager {
   }
 
   _buildCatalog() {
+    const personajes = Array.from({ length: 32 }, (_, i) =>
+      `assets/personajes/pj${i + 1}.jfif`
+    );
+
     return [
-
       new Theme(
-        'animals',
-        '🐾 Animales',
-        [
-          '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼',
-          '🐨','🐯','🦁','🐮','🐸','🐵','🐔','🐧',
-          '🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗',
-          '🐴','🦄','🐝','🦋','🐌','🐞','🐜','🦎'
-        ],
+        'touhou',
+        '🎴 Touhou',
+        personajes,
         {
-          '--color-bg':          '#1a2e1a',
-          '--color-surface':     '#1e3d1e',
-          '--color-primary':     '#4ade80',
-          '--color-accent':      '#86efac',
-          '--color-card-front':  '#14532d',
-          '--color-card-back':   '#166534',
-          '--color-card-border': '#4ade80',
-          '--color-matched':     '#bbf7d0',
-          '--color-wrong':       '#f87171'
-        }
-      ),
-
-      new Theme(
-        'space',
-        '🚀 Espacio',
-        [
-          '🚀','🛸','🌙','⭐','🌟','💫','☄️','🪐',
-          '🌍','🌎','🌏','🌑','🌒','🌓','🌔','🌕',
-          '🌖','🌗','🌘','🌌','🔭','👨‍🚀','👩‍🚀','🛰️',
-          '🌠','🌃','🌉','💥','🔆','🌀','⚡','🌈'
-        ],
-        {
-          '--color-bg':          '#0a0a1a',
-          '--color-surface':     '#0d0d2b',
-          '--color-primary':     '#818cf8',
-          '--color-accent':      '#c7d2fe',
-          '--color-card-front':  '#1e1b4b',
-          '--color-card-back':   '#312e81',
-          '--color-card-border': '#818cf8',
-          '--color-matched':     '#e0e7ff',
-          '--color-wrong':       '#f87171'
-        }
-      ),
-
-      new Theme(
-        'food',
-        '🍕 Comida',
-        [
-          '🍕','🍔','🌮','🍜','🍣','🍩','🎂','🍦',
-          '🍓','🍉','🍇','🍋','🍑','🍒','🥝','🥑',
-          '🌽','🥕','🧄','🥦','🍄','🧅','🥜','🌰',
-          '🍺','🧃','🥤','🍵','☕','🧁','🍪','🥐'
-        ],
-        {
-          '--color-bg':          '#2d1a0e',
-          '--color-surface':     '#3d2010',
-          '--color-primary':     '#fb923c',
-          '--color-accent':      '#fed7aa',
-          '--color-card-front':  '#7c2d12',
-          '--color-card-back':   '#9a3412',
-          '--color-card-border': '#fb923c',
-          '--color-matched':     '#ffedd5',
+          '--color-bg':          '#0d0d1a',
+          '--color-surface':     '#1a1a2e',
+          '--color-primary':     '#e94560',
+          '--color-accent':      '#ff6b9d',
+          '--color-card-front':  '#16213e',
+          '--color-card-back':   '#0f3460',
+          '--color-card-border': '#e94560',
+          '--color-matched':     '#4ade80',
           '--color-wrong':       '#f87171'
         }
       )
-
     ];
   }
 

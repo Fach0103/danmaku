@@ -24,9 +24,14 @@ class HUD {
     this._els.pairs      = this._createEl('span',   'hud-pairs',   center, 'Pares: 0');
     this._els.timer      = this._createEl('span',   'hud-timer',   right,  '00:00');
     this._els.restartBtn = this._createEl('button', 'hud-restart', right,  'Reiniciar');
+    this._els.exitBtn    = this._createEl('button', 'hud-exit',    right,  'Salir');
 
     this._els.restartBtn.addEventListener('click', () => {
       this.container.dispatchEvent(new CustomEvent('hud-restart', { bubbles: true }));
+    });
+
+    this._els.exitBtn.addEventListener('click', () => {
+      this._showExitConfirm();
     });
 
     this.container.appendChild(left);
@@ -61,9 +66,9 @@ class HUD {
     this._els.pairs.textContent      = 'Pares: 0';
   }
 
-  updateMoves(moves)            { this._els.moves.textContent = `Movimientos: ${moves}`; }
-  updatePairs(matched, total)   { this._els.pairs.textContent = `Pares: ${matched} / ${total}`; }
-  updateTimer(formatted)        { this._els.timer.textContent = formatted; }
+  updateMoves(moves)          { this._els.moves.textContent = `Movimientos: ${moves}`; }
+  updatePairs(matched, total) { this._els.pairs.textContent = `Pares: ${matched} / ${total}`; }
+  updateTimer(formatted)      { this._els.timer.textContent = formatted; }
 
   updatePvP(players, scores, currentTurn) {
     this._els.playerInfo.innerHTML = players.map((name, i) => {
@@ -102,6 +107,35 @@ class HUD {
     document.getElementById('end-menu').addEventListener('click', () => {
       this.endScreenContainer.dispatchEvent(new CustomEvent('end-menu', { bubbles: true }));
     });
+  }
+
+  _showExitConfirm() {
+    const existing = document.getElementById('exit-confirm');
+    if (existing) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'exit-confirm';
+    overlay.classList.add('exit-confirm-overlay');
+    overlay.innerHTML = `
+      <div class="exit-confirm-box">
+        <p class="exit-confirm-msg">¿Seguro que quieres salir? <br> Se perderá el progreso actual.</p>
+        <div class="exit-confirm-actions">
+          <button class="exit-btn-cancel">Cancelar</button>
+          <button class="exit-btn-confirm">Salir</button>
+        </div>
+      </div>
+    `;
+
+    overlay.querySelector('.exit-btn-cancel').addEventListener('click', () => {
+      overlay.remove();
+    });
+
+    overlay.querySelector('.exit-btn-confirm').addEventListener('click', () => {
+      overlay.remove();
+      document.dispatchEvent(new CustomEvent('end-menu', { bubbles: true }));
+    });
+
+    document.body.appendChild(overlay);
   }
 
   _showHUD() { this.container.style.display = 'flex'; }
