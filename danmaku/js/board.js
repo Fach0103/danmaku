@@ -3,7 +3,8 @@
 // Depende de: nada
 // Es usado por: game.js, app.js
 
-const CARD_SIZE = 80;
+const CARD_WIDTH  = 80;
+const CARD_HEIGHT = 120;
 
 class Card {
   constructor(id, icon) {
@@ -85,7 +86,8 @@ class Board {
     const deck     = this._shuffle(selected.concat(selected));
 
     this.reset();
-    this.container.style.gridTemplateColumns = `repeat(${this.size}, ${CARD_SIZE}px)`;
+    this.container.style.gridTemplateColumns = `repeat(${this.size}, ${CARD_WIDTH}px)`;
+    this.container.style.gridAutoRows        = `${CARD_HEIGHT}px`;
 
     deck.forEach((icon, index) => {
       const card = new Card(index, icon);

@@ -41,6 +41,7 @@ class HUD {
 
   setupSolo(playerName) {
     this._showHUD();
+    this._hidePvPBoards();
     this._els.playerInfo.textContent = `👤 ${playerName}`;
     this._els.turnInfo.textContent   = '';
     this._els.timer.style.display    = 'inline';
@@ -49,16 +50,9 @@ class HUD {
     this._els.timer.textContent      = '00:00';
   }
 
-  setupPvP(players, scores, currentTurn) {
-    this._showHUD();
-    this._els.timer.style.display = 'none';
-    this._els.moves.textContent   = 'Movimientos: 0';
-    this._els.pairs.textContent   = 'Pares: 0';
-    this.updatePvP(players, scores, currentTurn);
-  }
-
   setupFree(playerName) {
     this._showHUD();
+    this._hidePvPBoards();
     this._els.playerInfo.textContent = `👤 ${playerName}`;
     this._els.turnInfo.textContent   = '';
     this._els.timer.style.display    = 'none';
@@ -66,47 +60,108 @@ class HUD {
     this._els.pairs.textContent      = 'Pares: 0';
   }
 
+  setupPvP(players, scores, currentTurn) {
+    this._showHUD();
+    this._showPvPBoards(players, scores);
+    this._els.timer.style.display    = 'none';
+    this._els.moves.style.display    = 'none';
+    this._els.pairs.style.display    = 'none';
+    this._els.playerInfo.textContent = '';
+    this._els.turnInfo.textContent   = `Turno: ${players[currentTurn]}`;
+    this.highlightActiveBoard(currentTurn);
+  }
+
+  _showPvPBoards(players, scores) {
+    const existing = document.getElementById('pvp-boards');
+    if (existing) existing.remove();
+
+    const pvpBoards = document.createElement('div');
+    pvpBoards.id = 'pvp-boards';
+    pvpBoards.classList.add('pvp-boards');
+
+    players.forEach((name, i) => {
+      const panel = document.createElement('div');
+      panel.classList.add('pvp-panel');
+      panel.id = `pvp-panel-${i}`;
+      panel.innerHTML = `
+        <div class="pvp-panel-header">
+          <span class="pvp-panel-name">👤 ${name}</span>
+          <span class="pvp-panel-score" id="pvp-score-${i}">${scores[i]} pares</span>
+        </div>
+        <div class="pvp-panel-stats">
+          <span id="pvp-moves-${i}">Movimientos: 0</span>
+          <span id="pvp-pairs-${i}">Pares: 0 / 0</span>
+        </div>
+      `;
+      pvpBoards.appendChild(panel);
+    });
+
+    const gameContainer = document.getElementById('game-container');
+    gameContainer.before(pvpBoards);
+    this._els.pvpBoards = pvpBoards;
+  }
+
+  _hidePvPBoards() {
+    const existing = document.getElementById('pvp-boards');
+    if (existing) existing.remove();
+    if (this._els.moves) this._els.moves.style.display = 'inline';
+    if (this._els.pairs) this._els.pairs.style.display = 'inline';
+  }
+
   updateMoves(moves)          { this._els.moves.textContent = `Movimientos: ${moves}`; }
   updatePairs(matched, total) { this._els.pairs.textContent = `Pares: ${matched} / ${total}`; }
   updateTimer(formatted)      { this._els.timer.textContent = formatted; }
 
-  updatePvP(players, scores, currentTurn) {
-    this._els.playerInfo.innerHTML = players.map((name, i) => {
-      const isActive = i === currentTurn;
-      return `<span class="pvp-player ${isActive ? 'active-player' : ''}">
-                ${isActive ? '▶' : ''} ${name}: ${scores[i]} pts
-              </span>`;
-    }).join('');
+  updatePvPScore(players, scores, currentTurn) {
+    scores.forEach((score, i) => {
+      const el = document.getElementById(`pvp-score-${i}`);
+      if (el) el.textContent = `${score} pares`;
+    });
     this._els.turnInfo.textContent = `Turno: ${players[currentTurn]}`;
   }
 
+  updatePvPMoves(playerIndex, moves) {
+    const el = document.getElementById(`pvp-moves-${playerIndex}`);
+    if (el) el.textContent = `Movimientos: ${moves}`;
+  }
+
+  updatePvPPairs(playerIndex, matched, total) {
+    const el = document.getElementById(`pvp-pairs-${playerIndex}`);
+    if (el) el.textContent = `Pares: ${matched} / ${total}`;
+  }
+
+  highlightActiveBoard(currentTurn) {
+    [0, 1].forEach(i => {
+      const panel = document.getElementById(`pvp-panel-${i}`);
+      const board = document.getElementById(`board-${i}`);
+      if (panel) panel.classList.toggle('pvp-panel--active', i === currentTurn);
+      if (board) board.classList.toggle('board--inactive',   i !== currentTurn);
+    });
+  }
+
+  markBoardFinished(playerIndex) {
+    const panel = document.getElementById(`pvp-panel-${playerIndex}`);
+    const board = document.getElementById(`board-${playerIndex}`);
+    if (panel) panel.classList.add('pvp-panel--finished');
+    if (board) board.classList.add('board--finished');
+  }
+
   showEndScreen(summary) {
+    console.log('HUD.showEndScreen llamado', summary);
+    console.log('endScreenContainer:', this.endScreenContainer);
+
     this._hideHUD();
-    if (typeof EndScreen !== 'undefined') {
-      const endScreen = new EndScreen(this.endScreenContainer);
-      endScreen.show(summary);
-      return;
-    }
-    // Fallback mínimo
+
+    const pvpBoards = document.getElementById('pvp-boards');
+    if (pvpBoards) pvpBoards.remove();
+
+    this.endScreenContainer.innerHTML     = '';
     this.endScreenContainer.style.display = 'flex';
-    this.endScreenContainer.innerHTML = `
-      <div class="end-card">
-        <h2>¡Partida terminada!</h2>
-        <p>Movimientos: ${summary.moves}</p>
-        <p>Pares: ${summary.matchedPairs} / ${summary.totalPairs}</p>
-        ${summary.time !== undefined ? `<p>Tiempo: ${this._formatTime(summary.time)}</p>` : ''}
-        ${summary.isDraw  ? '<p>¡Empate!</p>'                      : ''}
-        ${summary.winner  ? `<p>🏆 Ganador: ${summary.winner}</p>` : ''}
-        <button id="end-restart">Jugar de nuevo</button>
-        <button id="end-menu">Volver al menú</button>
-      </div>
-    `;
-    document.getElementById('end-restart').addEventListener('click', () => {
-      this.endScreenContainer.dispatchEvent(new CustomEvent('end-restart', { bubbles: true }));
-    });
-    document.getElementById('end-menu').addEventListener('click', () => {
-      this.endScreenContainer.dispatchEvent(new CustomEvent('end-menu', { bubbles: true }));
-    });
+
+    console.log('end-screen display seteado a flex');
+
+    const endScreen = new EndScreen(this.endScreenContainer);
+    endScreen.show(summary);
   }
 
   _showExitConfirm() {

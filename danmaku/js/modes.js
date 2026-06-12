@@ -17,11 +17,11 @@ class BaseMode {
 
   _bindCallbacks() {
     this.game.callbacks = {
-      onFirstFlip: ()                              => this.onFirstFlip(),
-      onMove:      (moves)                         => this.onMove(moves),
-      onMatch:     (cards, matchedPairs, total)    => this.onMatch(cards, matchedPairs, total),
-      onMismatch:  (cards)                         => this.onMismatch(cards),
-      onGameEnd:   (state)                         => this.onGameEnd(state)
+      onFirstFlip: ()                           => this.onFirstFlip(),
+      onMove:      (moves)                      => this.onMove(moves),
+      onMatch:     (cards, matchedPairs, total) => this.onMatch(cards, matchedPairs, total),
+      onMismatch:  (cards)                      => this.onMismatch(cards),
+      onGameEnd:   (state)                      => this.onGameEnd(state)
     };
   }
 
@@ -64,6 +64,7 @@ class SoloMode extends BaseMode {
   }
 
   onGameEnd(state) {
+    console.log('SoloMode.onGameEnd disparado', state);
     this.timer.stop();
     const summary = {
       mode:         'solo',
@@ -74,6 +75,7 @@ class SoloMode extends BaseMode {
       time:         this.timer.getElapsed(),
       achievements: this.achievementManager.getUnlocked()
     };
+    console.log('summary armado', summary);
     this.hud.showEndScreen(summary);
   }
 
@@ -83,38 +85,99 @@ class SoloMode extends BaseMode {
   }
 }
 
-class PvPMode extends BaseMode {
-  constructor(game, players, hud, achievementManager) {
-    super(game, players);
+class PvPMode {
+  constructor(games, players, hud, achievementManager) {
+    this.games              = games;
+    this.players            = players;
     this.hud                = hud;
     this.achievementManager = achievementManager;
     this.scores             = [0, 0];
+    this.moves              = [0, 0];
     this.currentTurn        = 0;
+    this.isFinished         = false;
+    this._bindCallbacks();
   }
 
-  onMove(moves) {
-    super.onMove(moves);
-    this.hud.updateMoves(moves);
+  _bindCallbacks() {
+    this.games.forEach((game, playerIndex) => {
+      game.callbacks = {
+        onFirstFlip: ()                           => this._onFirstFlip(playerIndex),
+        onMove:      (moves)                      => this._onMove(playerIndex, moves),
+        onMatch:     (cards, matchedPairs, total) => this._onMatch(playerIndex, cards, matchedPairs, total),
+        onMismatch:  (cards)                      => this._onMismatch(playerIndex, cards),
+        onGameEnd:   (state)                      => this._onGameEnd(playerIndex, state)
+      };
+    });
+  }
+
+  _onFirstFlip(playerIndex) {
+    if (playerIndex !== this.currentTurn) return;
+  }
+
+  _onMove(playerIndex, moves) {
+    if (playerIndex !== this.currentTurn) return;
+    this.moves[playerIndex] = moves;
+    this.hud.updatePvPMoves(playerIndex, moves);
     this.achievementManager.onMove(moves);
   }
 
-  onMatch(cards, matchedPairs, total) {
-    super.onMatch(cards, matchedPairs, total);
-    this.scores[this.currentTurn]++;
-    this.hud.updatePvP(this.players, this.scores, this.currentTurn);
-    this.hud.updatePairs(matchedPairs, total);
+  _onMatch(playerIndex, cards, matchedPairs, total) {
+    if (playerIndex !== this.currentTurn) return;
+    this.scores[playerIndex]++;
+    this.hud.updatePvPScore(this.players, this.scores, this.currentTurn);
+    this.hud.updatePvPPairs(playerIndex, matchedPairs, total);
     this.achievementManager.onMatch(matchedPairs);
   }
 
-  onMismatch(cards) {
+  _onMismatch(playerIndex, cards) {
+    if (playerIndex !== this.currentTurn) return;
     this.achievementManager.onMismatch();
     setTimeout(() => {
-      this.currentTurn = this.currentTurn === 0 ? 1 : 0;
-      this.hud.updatePvP(this.players, this.scores, this.currentTurn);
+      this._switchTurn();
     }, 950);
   }
 
-  onGameEnd(state) {
+  _onGameEnd(playerIndex, state) {
+    console.log(`PvPMode._onGameEnd jugador ${playerIndex}`, state);
+    this.games[playerIndex].state.isFinished = true;
+    this.hud.markBoardFinished(playerIndex);
+
+    const bothFinished = this.games.every(g => g.state.isFinished);
+    if (bothFinished) {
+      this._endGame();
+      return;
+    }
+
+    if (playerIndex === this.currentTurn) {
+      this._switchTurn();
+    }
+  }
+
+  _switchTurn() {
+    const nextTurn = this.currentTurn === 0 ? 1 : 0;
+    if (this.games[nextTurn].state.isFinished) {
+      this._endGame();
+      return;
+    }
+    this.currentTurn = nextTurn;
+    this.hud.updatePvPScore(this.players, this.scores, this.currentTurn);
+    this._updateBoardsLock();
+  }
+
+  _updateBoardsLock() {
+    this.games.forEach((game, index) => {
+      if (!game.state.isFinished) {
+        game.state.isLocked = index !== this.currentTurn;
+      }
+    });
+    this.hud.highlightActiveBoard(this.currentTurn);
+  }
+
+  _endGame() {
+    if (this.isFinished) return;
+    this.isFinished = true;
+    console.log('PvPMode._endGame disparado');
+
     const [s0, s1] = this.scores;
     const isDraw   = s0 === s1;
     const winner   = isDraw ? null : (s0 > s1 ? this.players[0] : this.players[1]);
@@ -123,21 +186,25 @@ class PvPMode extends BaseMode {
       mode:         'pvp',
       players:      this.players,
       scores:       this.scores,
-      moves:        state.moves,
-      matchedPairs: state.matchedPairs,
-      totalPairs:   this.game.board.totalPairs,
+      moves:        this.moves,
+      matchedPairs: this.scores,
+      totalPairs:   this.games.map(g => g.board.totalPairs),
       winner,
       isDraw,
       achievements: this.achievementManager.getUnlocked()
     };
+    console.log('PvP summary', summary);
     this.hud.showEndScreen(summary);
   }
 
   start() {
-    this.currentTurn = 0;
     this.scores      = [0, 0];
+    this.moves       = [0, 0];
+    this.currentTurn = 0;
+    this.isFinished  = false;
+    this.games.forEach(game => game.start());
     this.hud.setupPvP(this.players, this.scores, this.currentTurn);
-    super.start();
+    this._updateBoardsLock();
   }
 }
 
@@ -166,6 +233,7 @@ class FreeMode extends BaseMode {
   }
 
   onGameEnd(state) {
+    console.log('FreeMode.onGameEnd disparado', state);
     const summary = {
       mode:         'free',
       playerName:   this.playerName,
@@ -174,6 +242,7 @@ class FreeMode extends BaseMode {
       totalPairs:   this.game.board.totalPairs,
       achievements: this.achievementManager.getUnlocked()
     };
+    console.log('FreeMode summary', summary);
     this.hud.showEndScreen(summary);
   }
 

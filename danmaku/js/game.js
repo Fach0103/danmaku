@@ -36,6 +36,7 @@ class Game {
 
   start() {
     this.state.reset();
+    console.log('Game.start() — totalPairs:', this.board.totalPairs);
   }
 
   _handleCardClick(cardId) {
@@ -65,6 +66,7 @@ class Game {
   _evaluatePair() {
     const [cardA, cardB] = this.state.flippedCards;
     const isMatch = this._iconsMatch(cardA.icon, cardB.icon);
+    console.log(`Evaluando par: ${cardA.icon} vs ${cardB.icon} → ${isMatch ? 'MATCH' : 'NO MATCH'}`);
 
     if (isMatch) {
       this._handleMatch(cardA, cardB);
@@ -85,9 +87,12 @@ class Game {
     this.state.flippedCards = [];
     this.state.isLocked     = false;
 
+    console.log(`Par encontrado: ${this.state.matchedPairs} / ${this.board.totalPairs}`);
+
     this._trigger('onMatch', [cardA, cardB], this.state.matchedPairs, this.board.totalPairs);
 
     if (this.state.matchedPairs === this.board.totalPairs) {
+      console.log('¡Todos los pares encontrados! Disparando onGameEnd');
       this.state.isFinished = true;
       this._trigger('onGameEnd', this.state);
     }
@@ -110,6 +115,8 @@ class Game {
   _trigger(event, ...args) {
     if (typeof this.callbacks[event] === 'function') {
       this.callbacks[event](...args);
+    } else {
+      console.warn(`Callback no registrado: ${event}`);
     }
   }
 }
